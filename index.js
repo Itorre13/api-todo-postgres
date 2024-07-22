@@ -1,7 +1,7 @@
 require("dotenv").config();
 
 const express = require("express");
-const {leerTareas,nuevaTarea} = require("./database"); // como es js no necesita la extensión
+const {leerTareas,nuevaTarea,borrarTarea,actualizarEstado,actualizarTexto} = require("./database"); // como es js no necesita la extensión
 
 const servidor = express(); // creamos servidor con express
 
@@ -33,6 +33,7 @@ servidor.post("/tareas/nueva", async (peticion,respuesta,siguiente) => { // si l
         try{
             let id = await nuevaTarea(tarea);
 
+            respuesta.status(201);
             return respuesta.json({id})
         }catch(error){
             respuesta.status(500);
@@ -44,14 +45,50 @@ servidor.post("/tareas/nueva", async (peticion,respuesta,siguiente) => { // si l
     
 });
 
-servidor.delete("/tareas/borrar/:id", (peticion,respuesta) => {
-    respuesta.send(`borraremos id --> ${peticion.params.id}`);
+servidor.put("/tareas/actualizar/:operacion(1|2)/:id([0-9]+)",async (peticion,respuesta,siguiente) => {
+    let operaciones = [actualizarTexto,actualizarEstado];
 
+    let {id,operacion} = peticion.params;
+
+    operacion = Number(operacion); // para dejar claro que operacion va a ser un número en nuestro código. Será 1 o 2. Esto lo que hacer es coger el string y lo convierte en número.
+
+    let {tarea} = peticion.body;
+
+    if(operacion == 1 && (!tarea || tarea.trim() == "")){ // si es 1 y o no me han pasado la tarea o la tarea está vacía quiero mandarlo al error.
+        return siguiente({ error : "no tiene la propiedad TAREA" });
+    }
+    try{
+
+        let cantidad = await operaciones[operacion - 1](id, operacion == 1 ? tarea : null);
+
+        respuesta.json({ resultado : cantidad ? "ok" : "ko" });
+
+    }catch(error){
+        respuesta.status(500);
+        respuesta.json({ error : "error en el servidor"});
+    }
+    
+});
+
+servidor.delete("/tareas/borrar/:id([0-9]+)",async (peticion,respuesta) => {
+    try{
+        let cantidad = await borrarTarea(peticion.params.id);
+
+        respuesta.json({ resultado : cantidad ? "ok" : "ko" });
+    }catch(error){
+        respuesta.status(500);
+        respuesta.json({ error : "error en el servidor"});
+    }
 });
 
 servidor.use((error,peticion,respuesta,siguiente) => { // necesita los cuatro a pesar de que vayamos a utilizar solo el error y la respuesta. Los necesita porque sino el no puede identificar que necesita cuatro cosas
     respuesta.status(400); // decirle a la respuesta que su status es 400
-    respuesta.json({ error : "error en la petición" }) // a través de esa respueta en json responde con error en la petición
+    respuesta.json({ error : "error en la petición" }); // a través de esa respueta en json responde con error en la petición
+});
+
+servidor.use((peticion,respuesta) => {
+    respuesta.status(404);
+    respuesta.json({ error : "recurso no encontrado" });
 });
 
 servidor.listen(process.env.PORT);

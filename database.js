@@ -57,4 +57,52 @@ nuevaTarea("otra tarea") // crea una nueva tarea que pondremos entre paréntesis
 .catch( x => console.log(x)) // x será el mensaje de error
 */
 
-module.exports = {leerTareas,nuevaTarea} // con esta función las estamos exportando. Donde sea que metamos con require este fichero podremos usar estas funciones.
+function borrarTarea(id){
+    return new Promise(async (ok,ko) => { // retorna una promesa
+        const conexion = conectar(); // invoca la función conectar para traer la conexión
+        try{
+            let {count} = await conexion`DELETE FROM tareas WHERE id = ${id}`;
+
+            conexion.end();
+
+            ok(count); // será un 0 o un 1
+
+        }catch(error){
+            ko({ error : "error en base de datos" });
+        }
+    });
+}
+
+function actualizarEstado(id){
+    return new Promise(async (ok,ko) => { // retorna una promesa
+        const conexion = conectar(); // invoca la función conectar para traer la conexión
+        try{
+            let {count} = await conexion`UPDATE tareas SET terminada = NOT terminada WHERE id = ${id}`;
+
+            conexion.end();
+
+            ok(count); // será un 0 o un 1
+
+        }catch(error){
+            ko({ error : "error en base de datos" });
+        }
+    });
+}
+
+function actualizarTexto(id,texto){
+    return new Promise(async (ok,ko) => { // retorna una promesa
+        const conexion = conectar(); // invoca la función conectar para traer la conexión
+        try{
+            let {count} = await conexion`UPDATE tareas SET tarea = ${texto} WHERE id = ${id}`;
+
+            conexion.end();
+
+            ok(count); // será un 0 o un 1
+
+        }catch(error){
+            ko({ error : "error en base de datos" });
+        }
+    });
+}
+
+module.exports = {leerTareas,nuevaTarea,borrarTarea,actualizarEstado,actualizarTexto} // con esta función las estamos exportando. Donde sea que metamos con require este fichero podremos usar estas funciones.
