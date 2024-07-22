@@ -1,11 +1,14 @@
 require("dotenv").config();
 
 const express = require("express");
+const cors = require("cors");
 const {leerTareas,nuevaTarea,borrarTarea,actualizarEstado,actualizarTexto} = require("./database"); // como es js no necesita la extensión
 
 const servidor = express(); // creamos servidor con express
 
 //middlewares
+
+servidor.use(cors());
 
 servidor.use(express.json()); // este .json intercepta cualquier información que le llega y lo convierte a objeto y lo almacena en petición.body.(objeto body de la petición) Es de la familia del urlencoded
 
