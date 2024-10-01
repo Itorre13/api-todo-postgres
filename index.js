@@ -8,7 +8,7 @@ const servidor = express(); // creamos servidor con express
 
 //middlewares
 
-servidor.use(cors());
+servidor.use(cors()); // permite hacer peticiones desde cualquier dominio
 
 servidor.use(express.json()); // este .json intercepta cualquier información que le llega y lo convierte a objeto y lo almacena en petición.body.(objeto body de la petición) Es de la familia del urlencoded
 
@@ -30,7 +30,7 @@ servidor.get("/tareas", async (peticion,respuesta) => { // si llega una petició
 
 servidor.post("/tareas/nueva", async (peticion,respuesta,siguiente) => { // si la peticion que nos llega es con POST a esta URL. Tendremos que verificar que tarea exista y que no esté vacía. Si es así crearemos la tarea y responderemos a quien haya hecho la petición con el id. Si algo ha enviado mal lo vamos a enviar a error en la petición. Como desde este middleware vamos a querer comuncarnos con el middleware del error, necesitaremos tb 'siguiente'
 
-    let {tarea} = peticion.body;
+    let {tarea} = peticion.body; // extrae tarea del cuerpo de la peticion, xq es allí donde mete la tarea el body.parser
 
     if(tarea && tarea.trim() != ""){ // si existe la tarea y tarea.trim, xa poderle quitar los espacios q tenga, es distinto de vacío algo voy a hacer
         try{
@@ -48,32 +48,31 @@ servidor.post("/tareas/nueva", async (peticion,respuesta,siguiente) => { // si l
     
 });
 
-servidor.put("/tareas/actualizar/:operacion(1|2)/:id([0-9]+)",async (peticion,respuesta,siguiente) => {
+servidor.put("/tareas/actualizar/:operacion(1|2)/:id([0-9]+)", async (peticion,respuesta,siguiente) => {
     let operaciones = [actualizarTexto,actualizarEstado];
 
     let {id,operacion} = peticion.params;
 
-    operacion = Number(operacion); // para dejar claro que operacion va a ser un número en nuestro código. Será 1 o 2. Esto lo que hacer es coger el string y lo convierte en número.
+    operacion = Number(operacion); // para dejar claro que operacion va a ser un número en nuestro código. Es un string. Será 1 o 2. Esto lo que hacer es coger el string y lo convierte en número.
 
     let {tarea} = peticion.body;
 
-    if(operacion == 1 && (!tarea || tarea.trim() == "")){ // si es 1 y o no me han pasado la tarea o la tarea está vacía quiero mandarlo al error.
-        return siguiente({ error : "no tiene la propiedad TAREA" });
+    if(operacion == 1 && (!tarea || tarea.trim() == "")){ // si operacion es igual a 1 (actualizarTexto) y no me han pasado la tarea o la tarea está vacía quiero mandarlo al error.
+        return siguiente({ error : "no tiene la propiedad TAREA" }); // si es así queremos mandarlo al error y le pondremos que no tiene la propiedad TAREA
     }
     try{
 
-        let cantidad = await operaciones[operacion - 1](id, operacion == 1 ? tarea : null);
+        let cantidad = await operaciones[operacion - 1](id, operacion == 1 ? tarea : null); // busca en el array operaciones, operacion -1 sera o una y otra operacion dentro de ese array, representa a la dos. Le pasamos el id que la tienen las dos y le decimos que si la operacion es uno la pasamos la tarea y si no es así null, no le pasamos nada.
 
-        respuesta.json({ resultado : cantidad ? "ok" : "ko" });
+        respuesta.json({ resultado : cantidad ? "ok" : "ko" }); // esto es un copia pega del resultado del DELETE.
 
     }catch(error){
         respuesta.status(500);
         respuesta.json({ error : "error en el servidor"});
     }
-    
 });
 
-servidor.delete("/tareas/borrar/:id([0-9]+)",async (peticion,respuesta) => {
+servidor.delete("/tareas/borrar/:id([0-9]+)", async (peticion,respuesta) => {
     try{
         let cantidad = await borrarTarea(peticion.params.id);
 

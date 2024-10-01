@@ -27,13 +27,13 @@ function leerTareas(){
 }
 
 /*
-
 leerTareas()
 .then( x => console.log(x)) // x será las tareas
 .catch( x => console.log(x)) // x será el mensaje de error
 
 // esto sería una prueba unitaria. Una vez ya está probada y funciona sabemos que está lista -- TDD técnica de programación que utiliza funciones para probar
 */
+
 
 function nuevaTarea(tarea){
     return new Promise(async (ok,ko) => { // retorna una promesa
@@ -52,10 +52,11 @@ function nuevaTarea(tarea){
 }
 
 /*
-nuevaTarea("otra tarea") // crea una nueva tarea que pondremos entre paréntesis ()
+nuevaTarea("otra otra nueva tarea") // crea una nueva tarea que pondremos entre paréntesis ()
 .then( x => console.log(x)) // x será la nueva tarea
 .catch( x => console.log(x)) // x será el mensaje de error
 */
+
 
 function borrarTarea(id){
     return new Promise(async (ok,ko) => { // retorna una promesa
@@ -74,10 +75,10 @@ function borrarTarea(id){
 }
 
 function actualizarEstado(id){
-    return new Promise(async (ok,ko) => { // retorna una promesa
-        const conexion = conectar(); // invoca la función conectar para traer la conexión
+    return new Promise(async (ok,ko) => {
+        const conexion = conectar();
         try{
-            let {count} = await conexion`UPDATE tareas SET terminada = NOT terminada WHERE id = ${id}`;
+            let {count} = await conexion`UPDATE tareas SET terminada = NOT terminada WHERE id = ${id}`; // es un boolean de toda la vida, que esto sea igual a lo contrario. terminada sea igual a no terminada. Esto hace que terminada pase de true a false y viceversa
 
             conexion.end();
 
@@ -90,8 +91,8 @@ function actualizarEstado(id){
 }
 
 function actualizarTexto(id,texto){
-    return new Promise(async (ok,ko) => { // retorna una promesa
-        const conexion = conectar(); // invoca la función conectar para traer la conexión
+    return new Promise(async (ok,ko) => { 
+        const conexion = conectar();
         try{
             let {count} = await conexion`UPDATE tareas SET tarea = ${texto} WHERE id = ${id}`;
 
